@@ -15,4 +15,7 @@ script: tox -e $TOX_ENV
 
 install:
     - pip install tox
+    - which docker
+    - docker ps
     - sudo chmod o=rwx /var/run/docker.sock
+    - docker ps
