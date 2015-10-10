@@ -5,10 +5,6 @@ pytest-docker
     :target: https://travis-ci.org/jofusa/pytest-docker
     :alt: See Build Status on Travis CI
 
-.. image:: https://ci.appveyor.com/api/projects/status/github/jofusa/pytest-docker?branch=master
-    :target: https://ci.appveyor.com/project/jofusa/pytest-docker/branch/master
-    :alt: See Build Status on AppVeyor
-
 Plugin to help launch docker containers
 
 ----
