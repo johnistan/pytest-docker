@@ -1,6 +1,6 @@
 # Config file for automatic testing at travis-ci.org
 
-sudo: false
+sudo: true
 language: python
 python: 3.5
 env:
@@ -13,3 +13,4 @@ script: tox -e $TOX_ENV
 
 install:
     - pip install tox
+    - sudo chmod o=rwx /var/run/docker.sock
