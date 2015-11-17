@@ -1,0 +1,25 @@
+#! /bin/bash -e
+
+source /home/jenkins/miniconda/bin/activate ddlpy
+
+conda install --file conda.export
+pip install -r ./requirements-dev.txt
+PYTHONPATH=. py.test --junit-xml=results.xml --cov-report xml --cov ddlpy tests
+py.test --pep8 ddlpy 
+
+
+version=`git describe --tags --dirty --always`
+export VERSION=`echo $version | tr "-" _`
+echo VERSION, ${VERSION}
+
+
+
+echo `ls`
+if [[ $VERSION == *"_"* ]]
+then
+    echo "Dirty tag, not shipping"
+else
+    CONDA_PY=34 conda build ./conda_recipe
+    echo "Clean build, shipping!"
+    http --ignore-stdin -f POST usav1gam02:6969/upload platform='linux-64' filename@/home/jenkins/miniconda/conda-bld/linux-64/ddlpy-${VERSION}-py34_0.tar.bz2
+fi

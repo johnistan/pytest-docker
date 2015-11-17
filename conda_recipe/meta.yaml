@@ -1,0 +1,29 @@
+package:
+  name: pytest-docker
+  version: {{ environ.get('VERSION', '') }}
+
+source:
+  path: ../
+#  git_url: https://github.com/Activision/ddlpy.git 
+#  git_tag: {{ environ.get('VERSION', '') }}
+
+
+requirements:
+  build:
+    - python
+    - setuptools
+    - pip
+    - assertpy
+
+  run:
+    - python
+
+#build:
+
+  ## already linked relative to $ORIGIN, so we need to turn
+  ## off conda's relocation mechanism because it screws it up
+  #binary_relocation: false
+
+about:
+  home: https://github.com/Activision/pytest-docker.git
+  license:  Activision Proprietary

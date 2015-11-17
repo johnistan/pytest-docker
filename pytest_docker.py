@@ -40,7 +40,7 @@ class DockerLog:
         self.client = client
 
     def __contains__(self, t):
-        return t in self.logs 
+        return t in self.logs
 
     @property
     def logs(self):
@@ -83,12 +83,12 @@ class AbstractDockerContainer(object):
         self.pull_container()
 
         self._container = self.docker_client.create_container(
-            image = self.full_image_name,
-            environment = self.environment
+            image=self.full_image_name,
+            environment=self.environment
         )
         result = self.docker_client.start(self._container)
         time.sleep(1)
-        return result 
+        return result
 
     def stop(self):
         return self.docker_client.stop(self._container)
@@ -101,6 +101,10 @@ class AbstractDockerContainer(object):
 
     def kill(self):
         return self.docker_client.kill(self._container)
+
+    @property
+    def ip(self):
+        return self.docker_client.inspect_container(self._container)['NetworkSettings']['IPAddress']
 
     @property
     def log(self):
