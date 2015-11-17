@@ -19,6 +19,27 @@ Requirements
 
 * docker-py
 
+Example
+-----------
+
+.. code-block:: python
+
+        import pytest
+        from pytest_docker import AbstractDockerContainer
+
+        class RedisDockerContainer(AbstractDockerContainer):
+            image_name = 'redis'
+
+        @pytest.yield_fixture
+        def redis_container(docker_client):
+            container = RedisDockerContainer(docker_client)
+            container.start()
+            yield container
+            container.kill()
+
+        def test_redis_container_start(redis_container):
+            assert '6379' in redis_container.log
+
 
 Installation
 ------------
