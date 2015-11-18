@@ -92,3 +92,11 @@ def test_docker_fixture(testdir):
 
     # make sure that that we get a '0' exit code for the testsuite
     assert result.ret == 0
+
+
+def test_kafka_docker_fixture(kafka_container):
+    assert kafka_container
+
+
+def test_elasticsearch_docker_fixture(elasticsearch_container):
+    import ipdb; ipdb.set_trace()

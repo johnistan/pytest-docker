@@ -31,7 +31,7 @@ def docker_client():
         # kwargs = kwargs_from_env(assert_hostname=False)
         # return Client(**kwargs)
     # else:
-    return Client()
+    return Client(version='auto')
 
 
 class DockerLog:
@@ -56,6 +56,8 @@ class DockerLog:
 class AbstractDockerContainer(object):
     repository = None
     image_name = None
+    port_mappings = None
+    env = {}
     _log = None
 
     def __init__(self, docker_client, tag='latest'):
@@ -71,9 +73,7 @@ class AbstractDockerContainer(object):
 
     @property
     def environment(self):
-        _environment = {
-        }
-        return _environment
+        return self.env
 
     def pull_container(self):
         if not self.docker_client.images(self.full_image_name):
@@ -81,14 +81,25 @@ class AbstractDockerContainer(object):
 
     def start(self):
         self.pull_container()
+        self.build_container()
 
-        self._container = self.docker_client.create_container(
-            image=self.full_image_name,
-            environment=self.environment
-        )
         result = self.docker_client.start(self._container)
         time.sleep(1)
         return result
+
+    def build_container(self):
+        if self.port_mappings:
+            self._container = self.docker_client.create_container(
+                image=self.full_image_name,
+                environment=self.environment,
+                ports=list(self.port_mappings.keys()),
+                host_config=create_host_config(port_bindings=self.port_mappings)
+            )
+        else:
+            self._container = self.docker_client.create_container(
+                image=self.full_image_name,
+                environment=self.environment
+            )
 
     def stop(self):
         return self.docker_client.stop(self._container)
@@ -111,3 +122,48 @@ class AbstractDockerContainer(object):
         if not self._log:
             self._log = DockerLog(self._container, self.docker_client)
         return self._log
+
+
+class KafkaDockerContainer(AbstractDockerContainer):
+    """
+    Because how the kafka is setup we have to know the ip of the cluster so we
+    have to use localhost
+    """
+    image_name = 'spotify/kafka'
+    port_mappings = {9092: 9092, 2181: 2181}
+    env = {
+        'ADVERTISED_HOST': 'localhost',
+    }
+
+
+@pytest.yield_fixture
+def kafka_container(docker_client):
+    container = KafkaDockerContainer(docker_client)
+    container.start()
+    yield container
+    container.kill()
+
+
+class ElasticsearchDockerContainer(AbstractDockerContainer):
+    """
+    """
+    image_name = 'elasticsearch'
+    tag = '1.5'
+    port_mappings = {9200: 9200}
+
+    def build_container(self):
+        self._container = self.docker_client.create_container(
+            image=self.full_image_name,
+            environment=self.environment,
+#            ports=list(self.port_mappings.keys()),
+#            host_config=create_host_config(port_bindings=self.port_mappings),
+            command='elasticsearch -Dhttp.host=0.0.0.0'
+        )
+
+
+@pytest.yield_fixture
+def elasticsearch_container(docker_client):
+    container = ElasticsearchDockerContainer(docker_client)
+    container.start()
+    yield container
+    container.kill()
