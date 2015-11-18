@@ -96,7 +96,7 @@ class AbstractDockerContainer(object):
                 image=self.full_image_name,
                 environment=self.environment,
                 ports=list(self.port_mappings.keys()),
-                host_config=create_host_config(port_bindings=self.port_mappings)
+                host_config=create_host_config(port_bindings=self.port_mappings, network_mode='bridge')
             )
         else:
             self._container = self.docker_client.create_container(
