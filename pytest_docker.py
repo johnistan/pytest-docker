@@ -87,6 +87,11 @@ class AbstractDockerContainer(object):
         time.sleep(1)
         return result
 
+    def restart(self):
+        result = self.docker_client.restart(self._container)
+        time.sleep(1)
+        return result
+
     def build_container(self):
         if self.port_mappings:
             self._container = self.docker_client.create_container(
@@ -155,8 +160,8 @@ class ElasticsearchDockerContainer(AbstractDockerContainer):
         self._container = self.docker_client.create_container(
             image=self.full_image_name,
             environment=self.environment,
-#            ports=list(self.port_mappings.keys()),
-#            host_config=create_host_config(port_bindings=self.port_mappings),
+            ports=list(self.port_mappings.keys()),
+            host_config=create_host_config(port_bindings=self.port_mappings),
             command='elasticsearch -Dhttp.host=0.0.0.0'
         )
 
