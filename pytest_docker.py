@@ -91,6 +91,11 @@ class AbstractDockerContainer(object):
         time.sleep(1)
         return result
 
+    def restart(self):
+        result = self.docker_client.restart(self._container)
+        time.sleep(1)
+        return result
+
     def build_container(self):
         if self.port_mappings:
             self._container = self.docker_client.create_container(
@@ -158,16 +163,18 @@ def kafka_container(docker_client):
 class ElasticsearchDockerContainer(AbstractDockerContainer):
     """
     """
-    image_name = 'elasticsearch'
-    tag = '1.5'
-    port_mappings = {9200: 9200}
+
+    def __init__(self, docker_client, tag='1.5'):
+        self.image_name = 'elasticsearch'
+        self.port_mappings = {9200: 9200}
+        super().__init__(docker_client, tag)
+
 
     def build_container(self):
         self._container = self.docker_client.create_container(
             image=self.full_image_name,
             environment=self.environment,
-#            ports=list(self.port_mappings.keys()),
-#            host_config=create_host_config(port_bindings=self.port_mappings),
+            ports = [(9200, 'tcp')],
             command='elasticsearch -Dhttp.host=0.0.0.0'
         )
 
