@@ -56,13 +56,17 @@ class DockerLog:
 class AbstractDockerContainer(object):
     repository = None
     image_name = None
+    tag = 'latest'
     port_mappings = None
+    network_mode = 'bridge'
     env = {}
+
     _log = None
 
-    def __init__(self, docker_client, tag='latest'):
+    def __init__(self, docker_client, tag=None):
         self.docker_client = docker_client
-        self.tag = tag
+        if tag:
+            self.tag = tag
 
     @property
     def full_image_name(self):
@@ -98,12 +102,18 @@ class AbstractDockerContainer(object):
                 image=self.full_image_name,
                 environment=self.environment,
                 ports=list(self.port_mappings.keys()),
-                host_config=create_host_config(port_bindings=self.port_mappings)
+                host_config=create_host_config(
+                    port_bindings=self.port_mappings,
+                    network_mode=self.network_mode
+                )
             )
         else:
             self._container = self.docker_client.create_container(
                 image=self.full_image_name,
-                environment=self.environment
+                environment=self.environment,
+                host_config=create_host_config(
+                    network_mode=self.network_mode
+                )
             )
 
     def stop(self):
@@ -141,10 +151,11 @@ class KafkaDockerContainer(AbstractDockerContainer):
     }
 
 
-@pytest.yield_fixture
+@pytest.yield_fixture(scope='session')
 def kafka_container(docker_client):
     container = KafkaDockerContainer(docker_client)
     container.start()
+    time.sleep(2)
     yield container
     container.kill()
 
