@@ -58,6 +58,7 @@ class AbstractDockerContainer(object):
     image_name = None
     tag = 'latest'
     port_mappings = None
+    network_mode = 'bridge'
     env = {}
 
     _log = None
@@ -96,12 +97,18 @@ class AbstractDockerContainer(object):
                 image=self.full_image_name,
                 environment=self.environment,
                 ports=list(self.port_mappings.keys()),
-                host_config=create_host_config(port_bindings=self.port_mappings, network_mode='bridge')
+                host_config=create_host_config(
+                    port_bindings=self.port_mappings,
+                    network_mode=self.network_mode
+                )
             )
         else:
             self._container = self.docker_client.create_container(
                 image=self.full_image_name,
                 environment=self.environment,
+                host_config=create_host_config(
+                    network_mode=self.network_mode
+                )
             )
 
     def stop(self):
